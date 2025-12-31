@@ -1,0 +1,129 @@
+
+#:kivy 2.2.0
+
+ScreenManager:
+    EntryScreen:
+        name: "entry"
+    CalculatorScreen:
+        name: "calculator"
+    RealVaultScreen:
+        name: "real_vault"
+
+
+<EntryScreen>:
+    BoxLayout:
+        orientation: "vertical"
+        padding: 50
+        spacing: 20
+
+        Label:
+            text: "SYSTEM AUTHENTICATION"
+            font_size: "22sp"
+
+        TextInput:
+            id: auth_input
+            password: True
+            multiline: False
+            font_size: "18sp"
+            hint_text: "Enter access code"
+
+        Button:
+            text: "AUTHORIZE"
+            size_hint_y: None
+            height: "50dp"
+            on_press: root.check_password(auth_input.text)
+
+
+<CalculatorScreen>:
+    BoxLayout:
+        orientation: "vertical"
+        padding: 20
+        spacing: 10
+
+        TextInput:
+            id: display
+            text: "0"
+            readonly: True
+            font_size: "40sp"
+            size_hint_y: None
+            height: "70dp"
+
+        GridLayout:
+            cols: 4
+            spacing: 10
+            size_hint_y: 1
+
+            Button:
+                text: "7"
+                on_press: display.text = self.text if display.text == "0" else display.text + self.text
+            Button:
+                text: "8"
+                on_press: display.text += self.text
+            Button:
+                text: "9"
+                on_press: display.text += self.text
+            Button:
+                text: "AC"
+                on_press: display.text = "0"
+
+            Button:
+                text: "4"
+                on_press: display.text += self.text
+            Button:
+                text: "5"
+                on_press: display.text += self.text
+            Button:
+                text: "6"
+                on_press: display.text += self.text
+            Button:
+                text: "+"
+                on_press: display.text += self.text
+
+            Button:
+                text: "1"
+                on_press: display.text += self.text
+            Button:
+                text: "2"
+                on_press: display.text += self.text
+            Button:
+                text: "3"
+                on_press: display.text += self.text
+            Button:
+                text: "-"
+                on_press: display.text += self.text
+
+            Button:
+                text: "0"
+                on_press: display.text += self.text
+            Button:
+                text: "*"
+                on_press: display.text += self.text
+            Button:
+                text: "/"
+                on_press: display.text += self.text
+            Button:
+                text: "="
+                on_press: root.process_calc(display.text)
+
+
+<RealVaultScreen>:
+    BoxLayout:
+        orientation: "vertical"
+        padding: 40
+        spacing: 30
+
+        Label:
+            text: "SECURE VAULT ACCESS GRANTED"
+            font_size: "24sp"
+
+        Button:
+            text: "TRIGGER GPS SOS"
+            size_hint_y: None
+            height: "50dp"
+            on_press: root.trigger_sos()
+
+        Button:
+            text: "EXIT"
+            size_hint_y: None
+            height: "50dp"
+            on_press: app.stop()
