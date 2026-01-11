@@ -1,0 +1,78 @@
+<LoginScreen>:
+    BoxLayout:
+        orientation: "vertical"
+        padding: 20
+        Label:
+            text: "E-Encrypt Secure App"
+            font_size: 24
+        TextInput:
+            id: pin
+            hint_text: "Enter App PIN"
+            password: True
+        Button:
+            text: "Unlock"
+            on_press: root.unlock()
+
+<ChatScreen>:
+    BoxLayout:
+        orientation: "vertical"
+        Label:
+            text: "Secure Chat"
+        ScrollView:
+            Label:
+                id: chat_log
+                text: ""
+                size_hint_y: None
+                height: self.texture_size[1]
+        TextInput:
+            id: message
+            hint_text: "Type encrypted message"
+        BoxLayout:
+            size_hint_y: None
+            height: 40
+            Button:
+                text: "Send"
+                on_press: root.send_message()
+            Button:
+                text: "Settings"
+                on_press: app.root.current = "settings"
+            Button:
+                text: "SOS"
+                on_press: app.root.current = "sos"
+
+<SettingsScreen>:
+    BoxLayout:
+        orientation: "vertical"
+        Label:
+            text: "Centralized Settings Hub"
+            font_size: 22
+        CheckBox:
+        Label:
+            text: "Enable End-to-End Encryption"
+        CheckBox:
+        Label:
+            text: "Enable Steganography"
+        CheckBox:
+        Label:
+            text: "Enable SOS GPS Tracking"
+        Button:
+            text: "Back"
+            on_press: app.root.current = "chat"
+
+<SosScreen>:
+    BoxLayout:
+        orientation: "vertical"
+        Label:
+            text: "SOS EMERGENCY"
+            color: 1,0,0,1
+            font_size: 24
+        Label:
+            id: gps
+            text: "Location: Unknown"
+        Button:
+            text: "SEND SOS"
+            background_color: 1,0,0,1
+            on_press: root.send_sos()
+        Button:
+            text: "Back"
+            on_press: app.root.current = "chat"
