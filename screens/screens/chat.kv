@@ -1,0 +1,62 @@
+<ChatScreen>:
+    name: 'chat'
+
+    BoxLayout:
+        orientation: 'vertical'
+
+        # Header
+        BoxLayout:
+            size_hint_y: None
+            height: 60
+            padding: [10, 0]
+            spacing: 10
+
+            Button:
+                text: '←'
+                size_hint_x: None
+                width: 50
+                on_press: app.navigate_to('login')
+
+            Label:
+                text: 'Encrypted Chat'
+                font_size: '20sp'
+                bold: True
+                color: 0.2, 0.8, 1, 1
+
+            Button:
+                text: '⚙'
+                size_hint_x: None
+                width: 50
+                on_press: app.navigate_to('settings')
+
+        # Chat container
+        ScrollView:
+            id: chat_scroll
+            do_scroll_x: False
+
+            GridLayout:
+                id: chat_container
+                cols: 1
+                size_hint_y: None
+                height: self.minimum_height
+                spacing: 10
+                padding: [10, 10]
+
+        # Message input
+        BoxLayout:
+            size_hint_y: None
+            height: 60
+            padding: [10, 5]
+            spacing: 10
+
+            TextInput:
+                id: message_input
+                hint_text: 'Type encrypted message...'
+                multiline: False
+                size_hint_x: 0.7
+
+            Button:
+                text: 'SEND'
+                size_hint_x: 0.3
+                background_color: 0.2, 0.6, 1, 1
+                on_press: root.send_message()

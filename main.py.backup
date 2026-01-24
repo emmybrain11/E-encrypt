@@ -1,0 +1,657 @@
+from kivy.app import App
+from kivy.uix.screenmanager import ScreenManager, Screen
+from kivy.uix.floatlayout import FloatLayout
+from kivy.uix.boxlayout import BoxLayout
+from kivy.uix.gridlayout import GridLayout
+from kivy.uix.label import Label
+from kivy.uix.button import Button
+from kivy.uix.textinput import TextInput
+from kivy.uix.image import Image
+from kivy.uix.popup import Popup
+from kivy.graphics import Color, Rectangle, Ellipse, Line, Bezier
+from kivy.clock import Clock
+from kivy.core.window import Window
+from kivy.properties import NumericProperty, ListProperty, StringProperty
+from kivy.animation import Animation
+from kivy.uix.behaviors import ButtonBehavior
+import random
+import math
+from datetime import datetime
+from kivy.uix.button import Button
+from kivy.graphics import Color, RoundedRectangle
+from kivy.properties import ListProperty, NumericProperty
+from kivy.uix.behaviors import ButtonBehavior
+from kivy.uix.label import Label
+
+class ClickableLabel(ButtonBehavior, Label):
+    """A label that can be clicked like a button"""
+    pass
+
+
+class RoundedButton(Button):
+    """Custom rounded button with corner radius"""
+    corner_radius = NumericProperty(10)  # Default corner radius
+    button_color = ListProperty([0.2, 0.6, 1, 1])  # Default blue color
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.background_normal = ''
+        self.background_color = (0, 0, 0, 0)  # Transparent background
+
+        # Bind properties to update graphics
+        self.bind(pos=self.update_canvas, size=self.update_canvas)
+        self.bind(corner_radius=self.update_canvas)
+        self.bind(button_color=self.update_canvas)
+
+    def update_canvas(self, *args):
+        self.canvas.before.clear()
+        with self.canvas.before:
+            Color(*self.button_color)
+            RoundedRectangle(
+                pos=self.pos,
+                size=self.size,
+                radius=[self.corner_radius]
+            )
+
+
+# ===================== ANIMATED WATER BACKGROUND =====================
+class WaterBackground(FloatLayout):
+    """Animated water background with color changing waves"""
+
+    # Properties for animation
+    wave_offset = NumericProperty(0)
+    wave_speed = NumericProperty(0.5)
+    color_phase = NumericProperty(0)
+    ripple_radius = NumericProperty(0)
+    ripple_center = ListProperty([0.5, 0.5])
+
+    # Color palettes for water (blue/green/purple variations)
+    COLOR_PALETTES = [
+        [(0.1, 0.3, 0.6, 0.7), (0.2, 0.5, 0.8, 0.5), (0.3, 0.7, 0.9, 0.3)],  # Blues
+        [(0.1, 0.5, 0.4, 0.7), (0.3, 0.7, 0.5, 0.5), (0.5, 0.9, 0.6, 0.3)],  # Greens
+        [(0.4, 0.2, 0.6, 0.7), (0.6, 0.3, 0.8, 0.5), (0.8, 0.5, 0.9, 0.3)],  # Purples
+        [(0.6, 0.2, 0.3, 0.7), (0.8, 0.4, 0.5, 0.5), (0.9, 0.6, 0.7, 0.3)],  # Reds
+    ]
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+
+        # Initialize waves
+        self.waves = []
+        self.bubbles = []
+        self.ripples = []
+        self.current_palette = 0
+
+        # Create initial waves
+        for i in range(5):
+            self.waves.append({
+                'amplitude': random.uniform(0.01, 0.03),
+                'frequency': random.uniform(1.5, 3.0),
+                'phase': random.uniform(0, math.pi * 2),
+                'speed': random.uniform(0.2, 0.8),
+                'y_pos': random.uniform(0.2, 0.8),
+            })
+
+        # Create initial bubbles
+        for i in range(15):
+            self.create_bubble()
+
+        # Start animations
+        Clock.schedule_interval(self.update_waves, 1 / 60.0)
+        Clock.schedule_interval(self.change_color_palette, 10.0)
+        Clock.schedule_interval(self.create_random_ripple, 2.0)
+
+    def create_bubble(self):
+        """Create a floating bubble"""
+        bubble = {
+            'x': random.uniform(0.1, 0.9),
+            'y': random.uniform(-0.1, 0.1),
+            'radius': random.uniform(0.002, 0.01),
+            'speed': random.uniform(0.1, 0.3),
+            'wobble': random.uniform(0.5, 2.0),
+            'phase': random.uniform(0, math.pi * 2),
+        }
+        self.bubbles.append(bubble)
+        return bubble
+
+    def create_random_ripple(self, dt):
+        """Create random ripple effect"""
+        self.ripple_center = [random.uniform(0.2, 0.8), random.uniform(0.2, 0.8)]
+        self.ripple_radius = 0
+        anim = Animation(ripple_radius=0.5, duration=2.0, t='out_quad')
+        anim.start(self)
+
+    def change_color_palette(self, dt):
+        """Change to next color palette"""
+        self.current_palette = (self.current_palette + 1) % len(self.COLOR_PALETTES)
+        anim = Animation(color_phase=self.color_phase + 1, duration=3.0)
+        anim.start(self)
+
+    def update_waves(self, dt):
+        """Update wave animation"""
+        self.wave_offset += self.wave_speed * dt
+
+        # Update bubbles
+        for bubble in self.bubbles:
+            bubble['y'] += bubble['speed'] * dt
+            bubble['phase'] += bubble['wobble'] * dt
+
+            # Reset bubble if it goes off screen
+            if bubble['y'] > 1.2:
+                bubble['y'] = random.uniform(-0.1, 0)
+                bubble['x'] = random.uniform(0.1, 0.9)
+
+        # Redraw
+        self.canvas.clear()
+        with self.canvas:
+            # Get current colors
+            colors = self.COLOR_PALETTES[self.current_palette]
+
+            # Draw gradient background
+            Color(*colors[0])
+            Rectangle(pos=self.pos, size=self.size)
+
+            # Draw waves
+            for i, wave in enumerate(self.waves):
+                # Interpolate between colors
+                color_idx = i % len(colors)
+                next_color_idx = (color_idx + 1) % len(colors)
+                color = self.interpolate_color(
+                    colors[color_idx],
+                    colors[next_color_idx],
+                    math.sin(self.color_phase + i) * 0.5 + 0.5
+                )
+
+                Color(*color)
+
+                # Draw wave as bezier curve
+                points = []
+                segments = 50
+                for j in range(segments + 1):
+                    x = j / segments
+                    y = wave['y_pos'] + wave['amplitude'] * math.sin(
+                        x * wave['frequency'] * math.pi * 2 +
+                        wave['phase'] +
+                        self.wave_offset * wave['speed']
+                    )
+                    points.extend([
+                        self.x + x * self.width,
+                        self.y + y * self.height
+                    ])
+
+                # Add bottom points to close the shape
+                points.extend([
+                    self.right, self.y,
+                    self.x, self.y
+                ])
+
+                Line(points=points, width=1.5, close=True)
+
+            # Draw bubbles
+            for bubble in self.bubbles:
+                # Bubble color (lighter than water)
+                bubble_color = (
+                    colors[0][0] + 0.2,
+                    colors[0][1] + 0.2,
+                    colors[0][2] + 0.2,
+                    0.3
+                )
+                Color(*bubble_color)
+
+                x = self.x + bubble['x'] * self.width
+                y = self.y + bubble['y'] * self.height
+                radius = bubble['radius'] * min(self.width, self.height)
+
+                # Add slight wobble
+                wobble_x = math.sin(bubble['phase']) * radius * 0.3
+                wobble_y = math.cos(bubble['phase'] * 0.7) * radius * 0.3
+
+                Ellipse(pos=(x + wobble_x - radius, y + wobble_y - radius),
+                        size=(radius * 2, radius * 2))
+
+            # Draw ripple if active
+            if self.ripple_radius > 0 and self.ripple_radius < 0.5:
+                ripple_color = (1, 1, 1, 0.3 * (1 - self.ripple_radius * 2))
+                Color(*ripple_color)
+                center_x = self.x + self.ripple_center[0] * self.width
+                center_y = self.y + self.ripple_center[1] * self.height
+                radius = self.ripple_radius * min(self.width, self.height)
+                Line(circle=(center_x, center_y, radius), width=1)
+
+    def interpolate_color(self, color1, color2, t):
+        """Interpolate between two colors"""
+        return (
+            color1[0] + (color2[0] - color1[0]) * t,
+            color1[1] + (color2[1] - color1[1]) * t,
+            color1[2] + (color2[2] - color1[2]) * t,
+            color1[3] + (color2[3] - color1[3]) * t
+        )
+
+    def on_touch_down(self, touch):
+        """Create ripple on tap"""
+        if self.collide_point(*touch.pos):
+            self.ripple_center = [
+                (touch.x - self.x) / self.width,
+                (touch.y - self.y) / self.height
+            ]
+            self.ripple_radius = 0
+            anim = Animation(ripple_radius=0.3, duration=1.5, t='out_quad')
+            anim.start(self)
+
+            # Create bubble at touch point
+            self.create_bubble()
+            self.bubbles[-1]['x'] = (touch.x - self.x) / self.width
+            self.bubbles[-1]['y'] = (touch.y - self.y) / self.height
+
+        return super().on_touch_down(touch)
+
+
+# ===================== CUSTOM UI COMPONENTS =====================
+    # ===================== CUSTOM UI COMPONENTS =====================
+    class RoundedButton(ButtonBehavior, Label):
+        """Custom rounded button with hover effects"""
+
+        def __init__(self, **kwargs):
+            # Remove background_color from kwargs before passing to parent
+            self.bg_color = kwargs.pop('background_color', (0.2, 0.6, 0.8, 1))
+            super().__init__(**kwargs)
+
+            # Set text properties
+            self.color = (1, 1, 1, 1)
+            self.font_size = '18sp'
+            self.bold = True
+            self.halign = 'center'
+            self.valign = 'middle'
+            self.padding = (20, 10)
+
+            # Bind size to update canvas
+            self.bind(pos=self.update_canvas, size=self.update_canvas)
+            self.update_canvas()
+
+        def update_canvas(self, *args):
+            self.canvas.before.clear()
+            with self.canvas.before:
+                from kivy.graphics import Color, RoundedRectangle
+                Color(*self.bg_color)
+                RoundedRectangle(pos=self.pos, size=self.size, radius=[20])
+
+        def on_press(self):
+            # Store original size
+            if not hasattr(self, '_original_size'):
+                self._original_size = self.size.copy()
+
+            # Shrink animation on press
+            anim = Animation(width=self.width * 0.95, height=self.height * 0.95, duration=0.1)
+            anim.start(self)
+
+        def on_release(self):
+            # Restore size
+            if hasattr(self, '_original_size'):
+                anim = Animation(width=self._original_size[0], height=self._original_size[1], duration=0.1)
+                anim.start(self)
+    def on_press(self):
+        # Shrink animation on press
+        anim = Animation(size=(self.width * 0.95, self.height * 0.95), duration=0.1)
+        anim.start(self)
+
+    def on_release(self):
+        # Restore size
+        anim = Animation(size=(self.width / 0.95, self.height / 0.95), duration=0.1)
+        anim.start(self)
+
+
+class GlowingText(Label):
+    """Text with glowing effect"""
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.color = (1, 1, 1, 1)
+        self.font_size = '24sp'
+        self.bold = True
+        self.halign = 'center'
+        self.glow_intensity = 0.5
+        self.glow_phase = 0
+
+        Clock.schedule_interval(self.update_glow, 1 / 30.0)
+
+    def update_glow(self, dt):
+        self.glow_phase += dt * 2
+        glow = math.sin(self.glow_phase) * 0.3 + 0.7
+        self.canvas.before.clear()
+        with self.canvas.before:
+            # Main text shadow (glow effect)
+            for i in range(5, 0, -1):
+                alpha = 0.1 * glow * (i / 5)
+                Color(1, 1, 1, alpha)
+                Rectangle(
+                    pos=(self.x - i, self.y - i),
+                    size=(self.width + i * 2, self.height + i * 2),
+                    radius=[10]
+                )
+
+
+# ===================== SCREENS =====================
+class LoginScreen(Screen):
+    """Login screen with animated background"""
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+
+        # Main layout
+        main_layout = FloatLayout()
+
+        # Add water background
+        self.water_bg = WaterBackground()
+        main_layout.add_widget(self.water_bg)
+
+        # Center content layout
+        center_layout = BoxLayout(
+            orientation='vertical',
+            size_hint=(0.8, 0.6),
+            pos_hint={'center_x': 0.5, 'center_y': 0.5},
+            spacing=20,
+            padding=40
+        )
+
+        # App title with glow
+        title = GlowingText(
+            text='E-ENCRYPT PRO',
+            font_size='36sp',
+            size_hint=(1, 0.3)
+        )
+        center_layout.add_widget(title)
+
+        # Login form
+        form_layout = GridLayout(cols=1, spacing=15, size_hint=(1, 0.6))
+
+        # Username field
+        form_layout.add_widget(Label(
+            text='Username:',
+            color=(1, 1, 1, 0.8),
+            font_size='18sp'
+        ))
+        self.username_input = TextInput(
+            hint_text='Enter username',
+            multiline=False,
+            background_color=(1, 1, 1, 0.1),
+            foreground_color=(1, 1, 1, 1),
+            cursor_color=(1, 1, 1, 1),
+            font_size='18sp',
+            size_hint=(1, None),
+            height=50,
+            padding=15
+        )
+        form_layout.add_widget(self.username_input)
+
+        # Password field
+        form_layout.add_widget(Label(
+            text='Password:',
+            color=(1, 1, 1, 0.8),
+            font_size='18sp'
+        ))
+        self.password_input = TextInput(
+            hint_text='Enter password',
+            password=True,
+            multiline=False,
+            background_color=(1, 1, 1, 0.1),
+            foreground_color=(1, 1, 1, 1),
+            cursor_color=(1, 1, 1, 1),
+            font_size='18sp',
+            size_hint=(1, None),
+            height=50,
+            padding=15
+        )
+        form_layout.add_widget(self.password_input)
+
+        center_layout.add_widget(form_layout)
+
+        # Login button
+        login_btn = RoundedButton(
+            text='LOGIN',
+            size_hint=(1, None),
+            height=60,
+            background_color=(0.2, 0.6, 0.8, 1)
+        )
+        login_btn.bind(on_press=self.login)
+        center_layout.add_widget(login_btn)
+
+        # Register link
+        register_label = ClickableLabel(
+            text="Don't have an account? Register",
+            color=(0.7, 0.8, 1, 0.8),
+            font_size='16sp',
+            size_hint=(1, None),
+            height=40
+        ))
+        register_label.bind(on_press=self.show_register)
+        center_layout.add_widget(register_label)
+
+        main_layout.add_widget(center_layout)
+        self.add_widget(main_layout)
+
+    def login(self, instance):
+        """Handle login attempt"""
+        username = self.username_input.text
+        password = self.password_input.text
+
+        if username and password:
+            # Simple validation
+            if len(username) >= 3 and len(password) >= 6:
+                self.show_popup("Login Successful", f"Welcome back, {username}!")
+                # Switch to main screen
+                self.manager.current = 'main'
+            else:
+                self.show_popup("Login Failed", "Invalid credentials")
+        else:
+            self.show_popup("Login Failed", "Please fill all fields")
+
+    def show_register(self, instance):
+        """Show registration popup"""
+        content = BoxLayout(orientation='vertical', spacing=10, padding=20)
+        content.add_widget(Label(text='Registration would go here'))
+
+        popup = Popup(
+            title='Register',
+            content=content,
+            size_hint=(0.8, 0.6),
+            background='atlas://data/images/defaulttheme/modal'
+        )
+        popup.open()
+
+    def show_popup(self, title, message):
+        """Show a popup message"""
+        content = BoxLayout(orientation='vertical', spacing=10, padding=20)
+        content.add_widget(Label(text=message))
+
+        btn = Button(text='OK', size_hint=(1, 0.3))
+        popup = Popup(title=title, content=content, size_hint=(0.7, 0.4))
+        btn.bind(on_press=popup.dismiss)
+        content.add_widget(btn)
+
+        popup.open()
+
+
+class MainScreen(Screen):
+    """Main dashboard screen"""
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+
+        layout = FloatLayout()
+
+        # Add water background
+        self.water_bg = WaterBackground()
+        layout.add_widget(self.water_bg)
+
+        # Dashboard title
+        title = GlowingText(
+            text='DASHBOARD',
+            font_size='32sp',
+            size_hint=(1, 0.2),
+            pos_hint={'top': 0.95}
+        )
+        layout.add_widget(title)
+
+        # Dashboard buttons grid
+        grid = GridLayout(
+            cols=2,
+            spacing=30,
+            padding=50,
+            size_hint=(0.9, 0.6),
+            pos_hint={'center_x': 0.5, 'center_y': 0.5}
+        )
+
+        # Dashboard buttons
+        buttons = [
+            ('Encrypt File', (0.3, 0.5, 0.8, 1)),
+            ('Decrypt File', (0.5, 0.3, 0.8, 1)),
+            ('Secure Chat', (0.8, 0.3, 0.5, 1)),
+            ('Vault', (0.8, 0.5, 0.3, 1)),
+            ('Settings', (0.5, 0.8, 0.3, 1)),
+            ('Logout', (0.8, 0.3, 0.3, 1))
+        ]
+
+        for text, color in buttons:
+            btn = RoundedButton(
+                text=text,
+                background_color=color
+            )
+            if text == 'Logout':
+                btn.bind(on_press=self.logout)
+            else:
+                btn.bind(on_press=lambda x, t=text: self.show_feature(t))
+            grid.add_widget(btn)
+
+        layout.add_widget(grid)
+
+        # Status label
+        self.status_label = Label(
+            text=f'Logged in at {datetime.now().strftime("%H:%M")}',
+            color=(1, 1, 1, 0.7),
+            font_size='16sp',
+            size_hint=(1, 0.1),
+            pos_hint={'bottom': 0.05}
+        )
+        layout.add_widget(self.status_label)
+
+        self.add_widget(layout)
+
+    def logout(self, instance):
+        """Logout and return to login screen"""
+        self.manager.current = 'login'
+
+    def show_feature(self, feature):
+        """Show feature popup"""
+        self.show_popup(feature, f"{feature} feature would open here")
+
+
+class GroupScreen(Screen):
+    """Groups management screen"""
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+
+        layout = FloatLayout()
+
+        # Add water background
+        self.water_bg = WaterBackground()
+        layout.add_widget(self.water_bg)
+
+        # Title
+        title = GlowingText(
+            text='GROUPS',
+            font_size='32sp',
+            size_hint=(1, 0.2),
+            pos_hint={'top': 0.95}
+        )
+        layout.add_widget(title)
+
+        # Groups list
+        groups_box = BoxLayout(
+            orientation='vertical',
+            spacing=10,
+            padding=30,
+            size_hint=(0.9, 0.6),
+            pos_hint={'center_x': 0.5, 'center_y': 0.5}
+        )
+
+        groups = ['Family', 'Work Team', 'Friends', 'Project Group']
+        for group in groups:
+            group_btn = RoundedButton(
+                text=group,
+                background_color=(0.3, 0.6, 0.8, 0.8),
+                size_hint=(1, None),
+                height=60
+            )
+            groups_box.add_widget(group_btn)
+
+        layout.add_widget(groups_box)
+
+        # Create new group button
+        new_group_btn = RoundedButton(
+            text='+ CREATE NEW GROUP',
+            background_color=(0.2, 0.8, 0.5, 1),
+            size_hint=(0.6, None),
+            height=50,
+            pos_hint={'center_x': 0.5, 'bottom': 0.1}
+        )
+        new_group_btn.bind(on_press=self.create_group)
+        layout.add_widget(new_group_btn)
+
+        self.add_widget(layout)
+
+    def create_group(self, instance):
+        """Create new group"""
+        app = App.get_running_app()
+        if app:
+            app.show_popup("New Group", "Group creation interface would open here")
+
+
+# ===================== MAIN APP =====================
+class EEncryptPro(App):
+    """Main application class"""
+
+    def build(self):
+        # Set window properties
+        Window.clearcolor = (0.1, 0.1, 0.1, 1)
+
+        # Create screen manager
+        sm = ScreenManager()
+
+        # Add screens
+        sm.add_widget(LoginScreen(name='login'))
+        sm.add_widget(MainScreen(name='main'))
+        sm.add_widget(GroupScreen(name='groups'))
+
+        return sm
+
+    def show_popup(self, title, message):
+        """Show popup from anywhere in the app"""
+        content = BoxLayout(orientation='vertical', spacing=10, padding=20)
+        content.add_widget(Label(text=message, font_size='18sp'))
+
+        btn = Button(
+            text='OK',
+            size_hint=(1, 0.3),
+            background_color=(0.2, 0.6, 0.8, 1),
+            color=(1, 1, 1, 1)
+        )
+
+        popup = Popup(
+            title=title,
+            content=content,
+            size_hint=(0.7, 0.4),
+            separator_color=(0.2, 0.6, 0.8, 1),
+            title_color=(1, 1, 1, 1),
+            title_size='20sp'
+        )
+
+        btn.bind(on_press=popup.dismiss)
+        content.add_widget(btn)
+
+        popup.open()
+
+
+# ===================== RUN THE APP =====================
+if __name__ == '__main__':
+    EEncryptPro().run()

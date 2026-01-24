@@ -1,0 +1,103 @@
+<LoginScreen>:
+    name: 'login'
+
+    BoxLayout:
+        orientation: 'vertical'
+        padding: 40
+        spacing: 20
+
+        # Background canvas for animations
+        BoxLayout:
+            id: background_canvas
+            size_hint: 1, 1
+
+        # Logo/Header
+        BoxLayout:
+            size_hint_y: None
+            height: 100
+            orientation: 'vertical'
+            spacing: 5
+
+            Label:
+                text: 'E-ENCRYPT PRO'
+                font_size: '28sp'
+                bold: True
+                color: 0.2, 0.8, 1, 1
+                size_hint_y: None
+                height: 40
+
+            Label:
+                text: 'Military-Grade Secure Messenger'
+                font_size: '14sp'
+                color: 0.7, 0.8, 1, 1
+                size_hint_y: None
+                height: 20
+
+        # Login form
+        BoxLayout:
+            orientation: 'vertical'
+            size_hint_y: None
+            height: 200
+            spacing: 15
+
+            TextInput:
+                id: username_input
+                hint_text: 'Username'
+                multiline: False
+                size_hint_y: None
+                height: 45
+                padding: [15, 10]
+                background_color: 0.1, 0.15, 0.2, 0.8
+                foreground_color: 1, 1, 1, 1
+
+            TextInput:
+                id: password_input
+                hint_text: 'Password'
+                password: True
+                multiline: False
+                size_hint_y: None
+                height: 45
+                padding: [15, 10]
+                background_color: 0.1, 0.15, 0.2, 0.8
+                foreground_color: 1, 1, 1, 1
+
+            Label:
+                text: 'Tip: Add "911" to password for duress mode'
+                font_size: '12sp'
+                color: 1, 0.5, 0.5, 1
+                size_hint_y: None
+                height: 20
+
+        # Buttons
+        BoxLayout:
+            orientation: 'vertical'
+            size_hint_y: None
+            height: 120
+            spacing: 10
+
+            Button:
+                text: 'LOGIN'
+                size_hint_y: None
+                height: 50
+                background_color: 0.2, 0.6, 1, 1
+                color: 1, 1, 1, 1
+                font_size: '16sp'
+                bold: True
+                on_press: app.login(username_input.text, password_input.text)
+
+            Button:
+                text: 'USE DEMO ACCOUNT'
+                size_hint_y: None
+                height: 40
+                background_color: 0.3, 0.7, 0.3, 1
+                on_press:
+                    username_input.text = 'demo'
+                    password_input.text = 'demo123'
+                    app.login('demo', 'demo123')
+
+            Label:
+                text: 'For cybersecurity professionals only'
+                font_size: '12sp'
+                color: 0.5, 0.5, 0.5, 1
+                size_hint_y: None
+                height: 20

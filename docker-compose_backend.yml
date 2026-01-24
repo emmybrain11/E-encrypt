@@ -1,0 +1,70 @@
+version: '3.8'
+
+services:
+  backend:
+    build: .
+    container_name: e-encrypt-backend
+    ports:
+      - "8000:8000"
+    environment:
+      - SECRET_KEY=e-encrypt-secret-key-2024-quantum-secure
+      - DATABASE_URL=sqlite:///./backend/eencrypt.db
+      - UPLOAD_DIR=./backend/uploads
+      - STATIC_DIR=./backend/static
+    volumes:
+      - ./backend_data:/app/backend
+      - ./logs:/app/logs
+    restart: unless-stopped
+    networks:
+      - eencrypt-network
+
+  # Optional Redis for production (for WebSocket and caching)
+  redis:
+    image: redis:7-alpine
+    container_name: e-encrypt-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    restart: unless-stopped
+    networks:
+      - eencrypt-network
+
+  # Optional Celery worker for background tasks
+  worker:
+    build: .
+    container_name: e-encrypt-worker
+    command: celery -A backend_api.celery_app worker --loglevel=info
+    environment:
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - CELERY_RESULT_BACKEND=redis://redis:6379/0
+    depends_on:
+      - redis
+      - backend
+    restart: unless-stopped
+    networks:
+      - eencrypt-network
+
+  # Nginx reverse proxy (optional for production)
+  nginx:
+    image: nginx:alpine
+    container_name: e-encrypt-nginx
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./ssl:/etc/nginx/ssl:ro
+    depends_on:
+      - backend
+    restart: unless-stopped
+    networks:
+      - eencrypt-network
+
+networks:
+  eencrypt-network:
+    driver: bridge
+
+volumes:
+  backend_data:
+  redis_data:

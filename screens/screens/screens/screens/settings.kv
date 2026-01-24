@@ -1,0 +1,196 @@
+<SettingsScreen>:
+    name: 'settings'
+
+    BoxLayout:
+        orientation: 'vertical'
+        padding: [10, 10]
+        spacing: 10
+
+        # Header
+        BoxLayout:
+            size_hint_y: None
+            height: 60
+
+            Button:
+                text: '← Back'
+                size_hint_x: None
+                width: 100
+                on_press: app.navigate_to('chat')
+
+            Label:
+                text: 'Settings'
+                font_size: '24sp'
+                bold: True
+                color: 0.2, 0.8, 1, 1
+
+        # Settings options
+        ScrollView:
+            do_scroll_x: False
+
+            GridLayout:
+                cols: 1
+                size_hint_y: None
+                height: self.minimum_height
+                spacing: 15
+                padding: [10, 10]
+
+                # Security settings
+                Label:
+                    text: 'Security Settings:'
+                    size_hint_y: None
+                    height: 30
+                    color: 0.8, 0.9, 1, 1
+                    bold: True
+
+                BoxLayout:
+                    size_hint_y: None
+                    height: 30
+
+                    Label:
+                        text: 'Auto Lock'
+                        size_hint_x: 0.7
+
+                    Switch:
+                        id: auto_lock
+                        active: True
+                        size_hint_x: 0.3
+
+                BoxLayout:
+                    size_hint_y: None
+                    height: 30
+
+                    Label:
+                        text: 'Biometric Auth'
+                        size_hint_x: 0.7
+
+                    Switch:
+                        id: biometric_auth
+                        active: False
+                        size_hint_x: 0.3
+
+                BoxLayout:
+                    size_hint_y: None
+                    height: 30
+
+                    Label:
+                        text: 'Stealth Mode'
+                        size_hint_x: 0.7
+
+                    Switch:
+                        id: stealth_mode
+                        active: False
+                        size_hint_x: 0.3
+
+                BoxLayout:
+                    size_hint_y: None
+                    height: 30
+
+                    Label:
+                        text: 'Encryption Level'
+                        size_hint_x: 0.7
+
+                    Slider:
+                        id: encryption_level
+                        min: 128
+                        max: 256
+                        step: 64
+                        value: 256
+                        size_hint_x: 0.3
+
+                BoxLayout:
+                    size_hint_y: None
+                    height: 30
+
+                    Label:
+                        text: 'Notifications'
+                        size_hint_x: 0.7
+
+                    Switch:
+                        id: notifications
+                        active: True
+                        size_hint_x: 0.3
+
+                # Change password
+                Label:
+                    text: 'Change Password:'
+                    size_hint_y: None
+                    height: 30
+                    color: 0.8, 0.9, 1, 1
+                    bold: True
+
+                TextInput:
+                    id: old_password
+                    hint_text: 'Current Password'
+                    password: True
+                    size_hint_y: None
+                    height: 35
+
+                TextInput:
+                    id: new_password
+                    hint_text: 'New Password'
+                    password: True
+                    size_hint_y: None
+                    height: 35
+
+                TextInput:
+                    id: confirm_password
+                    hint_text: 'Confirm Password'
+                    password: True
+                    size_hint_y: None
+                    height: 35
+
+                Button:
+                    text: 'CHANGE PASSWORD'
+                    size_hint_y: None
+                    height: 40
+                    background_color: 0.2, 0.6, 1, 1
+                    on_press: root.change_password()
+
+                # Duress password
+                Label:
+                    text: 'Duress Password:'
+                    size_hint_y: None
+                    height: 30
+                    color: 1, 0.5, 0.5, 1
+                    bold: True
+
+                TextInput:
+                    id: duress_password
+                    hint_text: 'Duress Password'
+                    password: True
+                    size_hint_y: None
+                    height: 35
+
+                Button:
+                    text: 'SETUP DURESS PASSWORD'
+                    size_hint_y: None
+                    height: 40
+                    background_color: 1, 0.5, 0.5, 1
+                    on_press: root.setup_duress()
+
+                # Emergency
+                Label:
+                    text: 'Emergency:'
+                    size_hint_y: None
+                    height: 30
+                    color: 1, 0.3, 0.3, 1
+                    bold: True
+
+                Button:
+                    text: 'PANIC WIPE DATA'
+                    size_hint_y: None
+                    height: 50
+                    background_color: 1, 0.3, 0.3, 1
+                    color: 1, 1, 1, 1
+                    bold: True
+                    on_press: root.panic_wipe()
+
+                # Save button
+                Button:
+                    text: 'SAVE ALL SETTINGS'
+                    size_hint_y: None
+                    height: 50
+                    background_color: 0.3, 0.7, 0.3, 1
+                    color: 1, 1, 1, 1
+                    bold: True
+                    on_press: root.update_settings()

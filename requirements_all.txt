@@ -1,0 +1,17 @@
+# For Backend
+fastapi==0.104.0
+uvicorn[standard]==0.24.0
+sqlalchemy==2.0.23
+python-jose[cryptography]==3.3.0
+pycryptodome==3.19.0
+python-multipart==0.0.6
+
+# For Desktop App with Backend
+kivy==2.3.0
+pillow==10.0.0
+websocket-client==1.6.4
+requests==2.31.0
+
+# For Web App with Backend
+streamlit==1.28.0
+requests==2.31.0

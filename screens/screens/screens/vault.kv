@@ -1,0 +1,68 @@
+<VaultScreen>:
+    name: 'vault'
+
+    BoxLayout:
+        orientation: 'vertical'
+        padding: [10, 10]
+        spacing: 10
+
+        # Header
+        BoxLayout:
+            size_hint_y: None
+            height: 60
+
+            Button:
+                text: '← Back'
+                size_hint_x: None
+                width: 100
+                on_press: app.navigate_to('chat')
+
+            Label:
+                text: 'Secure Vault'
+                font_size: '24sp'
+                bold: True
+                color: 0.2, 0.8, 1, 1
+
+        # Vault items
+        ScrollView:
+            do_scroll_x: False
+
+            GridLayout:
+                id: vault_container
+                cols: 1
+                size_hint_y: None
+                height: self.minimum_height
+                spacing: 10
+
+        # Add new item
+        BoxLayout:
+            orientation: 'vertical'
+            size_hint_y: None
+            height: 150
+            spacing: 5
+
+            Label:
+                text: 'Add New Vault Item:'
+                size_hint_y: None
+                height: 30
+                color: 0.8, 0.9, 1, 1
+
+            TextInput:
+                id: new_item_name
+                hint_text: 'Item Name'
+                multiline: False
+                size_hint_y: None
+                height: 35
+
+            TextInput:
+                id: new_item_content
+                hint_text: 'Content (will be encrypted)'
+                size_hint_y: None
+                height: 50
+
+            Button:
+                text: 'ADD TO VAULT'
+                size_hint_y: None
+                height: 40
+                background_color: 0.3, 0.7, 0.3, 1
+                on_press: root.add_new_item()

@@ -1,0 +1,23 @@
+version: '3.8'
+
+services:
+  backend:
+    build: .
+    ports:
+      - "8000:8000"
+    environment:
+      - DATABASE_URL=sqlite:///./backend_securechat.db
+      - SECRET_KEY=your-secret-key-change-this
+    volumes:
+      - ./data:/app/data
+    command: uvicorn backend:app --host 0.0.0.0 --port 8000 --reload
+
+  webapp:
+    build: .
+    ports:
+      - "8501:8501"
+    environment:
+      - BACKEND_URL=http://backend:8000
+    depends_on:
+      - backend
+    command: streamlit run main_web.py --server.port 8501 --server.address 0.0.0.0

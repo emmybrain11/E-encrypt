@@ -1,0 +1,30 @@
+# Build files
+.venv/
+venv/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.so
+bin/
+.buildozer/
+dist/
+*.apk
+*.spec
+
+# Database
+*.db
+eencrypt.db
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE files
+.vscode/
+.idea/
+*.iml
+
+# Logs
+*.log
+build.log
