@@ -23,5 +23,5 @@ A quantum-resistant secure messaging application with all 8 requested features:
 
 1. **Clone the repository:**
 ```bash
-git clone https://github.com/emmybrain11/E-Encrypt-Complete.git
-cd E-Encrypt-Complete
+git clone https://github.com/emmybrain11/E-encrypt
+cd E-encrypt
